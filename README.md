@@ -52,13 +52,13 @@ Realizando un proceso de extraccion de datos de una fuente externa mediante Kine
 
 
 - Metricas del Stream de Kinesis
-![elt](./arquitectura.jpg)
+![elt](Images/Kinesis-ejecucion.jpg)
 
 
 
 - Se observan los archivos en el bucket S3, estableciendo el flujo de datos haciendo la lectura fila por fila desde el Stream de Kinesis para almacenarlo en el bucket S3.
 
-![elt](./arquitectura.jpg)
+![elt](Images/s3-02.jpg)
 
 
 
