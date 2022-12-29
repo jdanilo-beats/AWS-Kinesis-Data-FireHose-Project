@@ -1,0 +1,70 @@
+Description: Stack Lab Firehose
+Parameters:
+  NombreBucket:
+    Description: Nombre bucket
+    Type: String
+    Default: aws-firehose
+Resources:
+  deliverystream:
+    DependsOn:
+      - deliveryPolicy
+    Type: AWS::KinesisFirehose::DeliveryStream
+    Properties:
+      DeliveryStreamName: StreamMovies
+      ExtendedS3DestinationConfiguration:
+        BucketARN: !Join 
+          - ''
+          - - 'arn:aws:s3:::'
+            - !Ref s3bucket
+        BufferingHints:
+          IntervalInSeconds: '60'
+          SizeInMBs: '1'
+        CompressionFormat: UNCOMPRESSED
+        Prefix: data/input/firehose/movies
+        ErrorOutputPrefix: data/input/firehose/error
+        RoleARN: !GetAtt deliveryRole.Arn
+  s3bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join [ -, [ !Ref NombreBucket, !Ref AWS::AccountId ] ]
+  deliveryRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: firehose.amazonaws.com
+            Action: 'sts:AssumeRole'
+            Condition:
+              StringEquals:
+                'sts:ExternalId': !Ref 'AWS::AccountId'
+  deliveryPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: firehose_delivery_policy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - 's3:AbortMultipartUpload'
+              - 's3:GetBucketLocation'
+              - 's3:GetObject'
+              - 's3:ListBucket'
+              - 's3:ListBucketMultipartUploads'
+              - 's3:PutObject'
+            Resource:
+              - !Join 
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref s3bucket
+              - !Join 
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref s3bucket
+                  - '*'
+      Roles:
+        - !Ref deliveryRole
